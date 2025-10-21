@@ -11,20 +11,26 @@
 ## 보고서 정의  
 보고서 목차
 - SUMMARY 
-    - 주요 AI 트랜드 요약, 기업 관점 핵심 시사점
+    - 주요 AI 트랜드 요약
+    - 향후 5년 핵심 변화 포인트
+    - 기업 관점 핵심 시사점
 - 트랜드 분석
+    - 주요 기술/ 사례
+    - 기업 및 산업 동향
     - 트랜드 정의 및 등장 배경
-    - 주요 기술/ 사례/ 기업 동향
     - 산업별 적용 흐름
     - 사회적 반응
-    - 기업 관점의 전략 제안
-- 트랜드 선정 지표
-    - 관심도/주목도
-    - 사회적 영향력
-    - 성장 가능성
-    - 기업 적용성
+- 기업 전략 인사이트
+    - 비즈니스 기회 요인
+    - 리스크 및 대응 전략
+    - 기업 적용을 위한 제언
 - 참고 문헌
 - APPENDIX
+  - 트랜드 선정 지표 세부 내용
+     - 관심도/주목도
+     - 사회적 영향력
+     - 성장 가능성
+     - 기업 적용성
 
 ## Graph
 ```mermaid
@@ -35,24 +41,27 @@ flowchart TD
 
     %% === Agent Nodes ===
     B[SearchAgent<br/>정보 수집]
-    C[TechSumAgent<br/>트랜드 요약]
-    D[TrendPredictAgent<br/>트랜드 예측]
+    H[TrendSelectAgent<br/>트렌드 선정]
+    C[TechSumAgent<br/>트렌드별 정보 분석]
+    D[TrendPredictAgent<br/>트렌드 예측]
     G[RiskAgent<br/>리스크 분석]
     E[ReportAgent<br/>보고서 생성]
 
     %% === Main Pipeline Flow ===
-    A --> B --> C --> D --> G --> E --> F
+    A --> B --> H --> C --> D --> G --> E --> F
 
     %% === Styling ===
     classDef agent fill:#eef7ff,stroke:#3366cc,stroke-width:1.5px,color:#000,font-size:13px;
     classDef startend fill:#d4e8ff,stroke:#003366,stroke-width:1.5px,font-weight:bold;
     class A,F startend;
-    class B,C,D,G,E agent;
+    class B,H,C,D,G,E agent;
+
 ```
 
 ## Agent
 - SearchAgent : 최근 1~2년간 주요 연구 결과 및 뉴스를 출처별로 수집
-- TechSumAgent : 수집된 정보를 바탕으로 주요 기술별 트랜드 요약
+- TrendSelectAgent : 평가 지표에 따른 상위 트랜드 선별
+- TechSumAgent : 선정된 트랜드별 정보 분석
 - TrendPredictAgent : 각 기술 트랜드의 발전 방향 및 시장 적용 가능성 예측
 - RiskAgent : 예상 트랜드에 따른 리스크 및 기회 분석 요인 분석
 - ReportAgent : 트랜드 분석 결과를 정리한 보고서 작성
