@@ -10,7 +10,8 @@
 
 ## 보고서 정의  
 보고서 목차
-- SUMMARY → 주요 AI 트랜드 요약, 기업 관점 핵심 시사점
+- SUMMARY 
+    - 주요 AI 트랜드 요약, 기업 관점 핵심 시사점
 - 트랜드 분석
     - 트랜드 정의 및 등장 배경
     - 주요 기술/ 사례/ 기업 동향
@@ -26,7 +27,7 @@
 - APPENDIX
 
 ## Graph
-```
+```mermaid
 flowchart TD
     %% === START & END ===
     A([START])
@@ -56,6 +57,8 @@ flowchart TD
 - RiskAgent : 예상 트랜드에 따른 리스크 및 기회 분석 요인 분석
 - ReportAgent : 트랜드 분석 결과를 정리한 보고서 작성
 
+
+## Tool
 
 ## Contributors 
 - 송재령
