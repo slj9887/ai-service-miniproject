@@ -10,16 +10,18 @@
 
 ## 보고서 정의  
 보고서 목차
-- SUMMARY 
+1. SUMMARY 
     - 주요 AI 트랜드 요약
-    - 향후 5년 핵심 변화 포인트
     - 기업 관점 핵심 시사점
-- 트랜드 분석
-    - 트랜드 정의 및 등장 배경
-    - 주요 기술/ 사례
-    - 기업 및 산업 동향
-    - 산업별 적용 흐름
-    - 트랜드 전망 : 향후 5년간의 기술 발전과 시장 변화 예측
+2. 트랜드 분석
+    2.1 트랜드 정의 및 등장 배경  
+    2.2 주요 기술 및 사례  
+    2.3 기업 및 산업 동향  
+    - 주요 산업에서의 적용 현황 및 시장 규모 추이  
+    2.4 산업별 적용 흐름 
+    - 산업별 기술 도입 단계
+    - 산업별 대표 사례 및 적용 과제  
+    2.5 트랜드 전망 : 향후 5년간의 기술 발전과 시장 변화 예측  
 - 기업 전략 인사이트
     - 비즈니스 기회 요인
     - 리스크 및 대응 전략
@@ -34,33 +36,30 @@
 
 ## Graph
 ```mermaid
-flowchart TD
-    %% === START & END ===
-    A([START])
-    F([END])
-
+flowchart TB
     %% === Agent Nodes ===
-    B[SearchAgent<br/>정보 수집]
-    H[TrendSelectAgent<br/>트렌드 선정]
-    C[TechSumAgent<br/>트렌드별 정보 분석]
-    D[TrendPredictAgent<br/>트렌드 예측]
-    G[RiskAgent<br/>리스크 분석]
-    E[ReportAgent<br/>보고서 생성]
+    A["SearchAgent<br>정보 수집"]
+    B["TrendSelectAgent<br>트렌드 선정"]
+    C["JudgeAgent<br>트렌드 적합도 판별"]
+    D["TrendAnalysisAgent<br>트렌드별 정보 분석"]
+    E["TrendPredictAgent<br>트렌드 예측"]
+    F["RiskAgent<br>리스크 분석"]
+    G["ReportAgent<br>보고서 생성"]
 
     %% === Main Pipeline Flow ===
-    A --> B --> H --> C --> D --> G --> E --> F
+    A --> B --> C --> D --> E --> F --> G
+    C -. "기준 미달" .-> B
 
     %% === Styling ===
     classDef agent fill:#eef7ff,stroke:#3366cc,stroke-width:1.5px,color:#000,font-size:13px;
-    classDef startend fill:#d4e8ff,stroke:#003366,stroke-width:1.5px,font-weight:bold;
-    class A,F startend;
-    class B,H,C,D,G,E agent;
+    class A,B,C,D,E,F,G agent;
 
 ```
 
 ## Agent
 - SearchAgent : 최근 1~2년간 주요 연구 결과 및 뉴스를 출처별로 수집
-- TrendSelectAgent : 평가 지표에 따른 상위 트랜드 선별
+- TrendSelectAgent : 트랜드 선별
+- JudgeAgent : 평가 지표에 따른 트랜드 적합도 판별
 - TechSumAgent : 선정된 트랜드별 정보 분석
 - TrendPredictAgent : 각 기술 트랜드의 발전 방향 및 시장 적용 가능성 예측
 - RiskAgent : 예상 트랜드에 따른 리스크 및 기회 분석 요인 분석
