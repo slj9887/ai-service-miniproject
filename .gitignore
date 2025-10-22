@@ -1,0 +1,74 @@
+# ==========================
+# 🧠 Python & LangChain Project
+# ==========================
+
+# 가상환경 폴더
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 환경 변수 파일
+.env
+.env.*
+!.env.example   # 예시용 .env만 예외로 (공유용)
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 빌드 / 패키징 파일
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# IDE / 편집기 설정
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS 관련 캐시
+.DS_Store
+Thumbs.db
+
+# 로그 / 임시 파일
+logs/
+*.log
+*.out
+*.tmp
+*.bak
+
+# 데이터 / 결과 파일
+data/
+outputs/
+notebooks/.ipynb_checkpoints
+*.db
+*.sqlite3
+
+# 모델 / 체크포인트
+models/
+checkpoints/
+
+# 보고서 / PDF 결과물
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+
+# ==========================
+# ☁️ LangChain / RAG 관련
+# ==========================
+
+# FAISS / Vector DB 파일
+faiss_index/
+*.faiss
+*.pkl
+
+# 캐시 / 임시 Embedding 파일
+.cache/
+tmp/
