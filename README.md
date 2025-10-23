@@ -8,6 +8,34 @@
 - Methods : 웹 기반 트렌드 키워드 수집, 선정 지표 기반 평가, 시사점 도출 및 보고서 생성
 - Tools : Langchain 기반 에이전트 설계, GPT-4o 기반 요약 및 분석
 
+## 폴더 구조
+AI_SERVICE_MINIPROJECT/
+├── agents/ # 주요 에이전트 모듈
+│ ├── init.py
+│ ├── search_agent.py # Tavily API를 통해 트렌드 후보 수집
+│ ├── trend_select_agent.py # 주요 트렌드 선택 로직
+│ ├── judge_agent.py # 기술 성숙도 및 성장성 평가
+│ ├── trend_analysis_agent.py # 산업별 적용 및 기술적 특성 분석
+│ ├── trend_predict_agent.py # 향후 3~5년간 기술 발전 방향 예측
+│ ├── risk_agent.py # 리스크 및 기회 요인 분석
+│ ├── report_agent.py # PDF 보고서 자동 생성
+│ └── state_schema.py # 전체 워크플로우 state 정의
+│
+├── utils/ # 보조 유틸리티
+│ ├── data_cleaner.py # 텍스트 전처리 및 정제
+│ └── init.py
+│
+├── reports/ # 자동 생성된 분석 보고서
+│ └── 
+│
+├── fonts/ # PDF 렌더링용 폰트
+│
+├── .env # API 키 및 환경 변수
+├── main.py # 실행 엔트리 포인트
+├── gitignore
+├── requirements.txt # 의존성 목록
+└── README.md # 프로젝트 설명서
+
 ## 보고서 정의  
 보고서 목차
 1. SUMMARY 
@@ -30,7 +58,7 @@
 - APPENDIX
   - 트렌드 선정 지표 세부 내용
     - 기술적 성숙도 
-    - 시장 성장성
+    - 미래 성장성
     - 산업 적용성
     - 사회적 영향력
     - 혁신성 및 차별성
@@ -59,7 +87,9 @@ flowchart TB
 
 ## Agent
 - SearchAgent : 최근 1~2년간 주요 연구 결과 및 뉴스를 출처별로 수집
-- TrendSelectAgent : 트렌드 선별
+- TrendSelectAgent : 트렌드 선별 
+    - 트렌드 키워드 추출 
+    - 최근 2년 내 급부상 정도, 향후 5년 성장 가능성, 산업 적용성을 기준으로 정렬
 - JudgeAgent : 평가 지표에 따른 트렌드 적합도 판별
 - TrendAnalysisAgent : 선정된 트렌드 정보 분석
 - TrendPredictAgent : 각 기술 트렌드의 발전 방향 및 시장 적용 가능성 예측

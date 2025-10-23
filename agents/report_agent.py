@@ -70,6 +70,12 @@ class PDF(FPDF):
 
 def report_agent(state: SystemState) -> SystemState:
     """TrendAnalysis, Predict, Risk 결과를 종합해 보고서 생성"""
+
+    print(f"[DEBUG] ReportAgent 진입 - state keys: {list(state.keys())}")
+    print(f"[DEBUG] ReportAgent 진입 - trend_prediction 타입: {type(state.get('trend_prediction'))}")
+    print(f"[DEBUG] ReportAgent 진입 - trend_prediction 내용: {state.get('trend_prediction')}")
+
+
     trend = state.get("current_trend")
     if not trend:
         print("current_trend가 없습니다.")
@@ -85,48 +91,61 @@ def report_agent(state: SystemState) -> SystemState:
     # 참고 문헌 URL 정리
     reference_urls = [r["url"] for r in search_results if r.get("url")] if search_results else []
 
-     # 보고서 프롬프트
+
     prompt = ChatPromptTemplate.from_template("""
     당신은 미래 기술 전략 보고서를 작성하는 전문 분석가입니다.
-    아래 제공된 분석 내용을 기반으로 {trend} 트렌드에 대한 완전한 기술 보고서를 작성하세요.
+    아래의 분석 데이터를 기반으로 {trend} 트렌드에 대한 심층 보고서를 작성하세요.
 
-    보고서 목차는 다음과 같으며, 반드시 포함하세요:
+    ------------------------------------------------
+   [작성 규칙]
+    - 보고서는 참고 문헌과 APPENDIX를 제외하고 무조건 5페이지 이상 분량으로 작성할 것
+    - 각 섹션은 구체적인 사례, 수치, 기업명, 기술 연구를 반드시 포함할 것
+    - (중요) 각 소제목은 최소 공백 포함해 2500자 이상으로 작성하세요.
+    - 2,3 중제목에는 서술하지 않는다.
+    - 출력 시 마크다운 기호(예: *, -, #)나 불릿포인트 사용 금지
+    - 한국어로 작성하되, 기술 용어는 영어 병기 가능
+    - 문단 간 명확한 구분과 제목 표기를 포함할 것
+    - 기술·시장·사회적 관점을 균형 있게 반영할 것
 
-    1. SUMMARY  - 주요 AI 트렌드 요약과 기업 관점 핵심 시사점을 하나의 문단으로 작성
+    ------------------------------------------------
+    [보고서 목차]
+    1. SUMMARY  
+    - 주요 AI 트렌드 요약과 기업 관점 핵심 시사점을 간결히 작성 (한 문단 이내)
 
     2. 트렌드 분석  
-       2.1 트렌드 정의 및 등장 배경  
-       2.2 주요 기술 및 사례  
-       2.3 기업 및 산업 동향  
-       2.4 산업별 적용 흐름  
-       2.5 향후 5년간의 기술 발전 및 시장 변화 예측  
+    - 기술의 등장 배경, 연구 동향, 산업별 활용, 시장 변화 예측을 구체적으로 서술  
+    - 단순 나열이 아닌 서사적으로 연결된 설명으로 작성  
+    2.1 트렌드 정의 및 등장 배경 — 역사적 맥락, 연구 전환점 포함  
+    2.2 주요 기술 및 사례 — 연구 논문, 기업 제품, 오픈소스 프레임워크 예시 포함  
+    2.3 산업 및 시장 동향 — 산업별 적용 현황, CAGR, 시장 점유율 예시 포함  
+    2.4 산업별 적용 흐름 — 제조, 헬스케어, 교육, 금융 등 주요 도메인별 분석  
+    2.5 향후 5년간의 기술 발전 및 시장 변화 예측 — AI 혁신의 방향성과 기술 융합 가능성 설명  
 
     3. 기업 전략 인사이트  
-       3.1 비즈니스 기회 요인  
-       3.2 리스크 및 대응 전략  
-       3.3 기업 적용을 위한 제안  
+    - 구체적 산업 사례, 적용 전략, 정책적 시사점 포함  
+    3.1 비즈니스 기회 요인 — 혁신 기업의 성공 요인, 신규 비즈니스 모델 제시  
+    3.2 리스크 및 대응 전략 — 기술적·정책적 리스크 및 규제 대응 방향  
+    3.3 기업 적용을 위한 제안  
 
     4. 참고 문헌  
-       - 출처 URL 리스트 포함  
+    - 출처 URL, 기관 보고서, 논문명, 연도, 제목 포함  
 
     5. APPENDIX  
-       - 트렌드 선정 지표 세부 내용  
-         - 기술적 성숙도  
-         - 미래 성장성  
-         - 산업 적용성  
-         - 혁신성 및 차별성  
+    - 트렌드 선정 지표 세부 내용  
+        - 기술 성숙도(Maturity), 성장성(Growth), 산업 적용성(Applicability), 혁신성(Innovation)  
+        - 0.0~0.3: 매우 낮음 / 0.4~0.6: 중간 수준 / 0.7~0.8: 유망 / 0.9~1.0: 매우 유망  
+        - 위 지표를 사용했음을 설명하고, 각 점수를 받은 이유를 서술  
+    
 
-    --------------------------
-    [분석 자료 요약]
+    ------------------------------------------------
+    [분석 데이터 입력]
     - Trend Analysis: {analysis}
     - Trend Prediction: {prediction}
     - Risk Analysis: {risk}
     - References: {references}
-    --------------------------
-
-    - 보고서는 자연스러운 한국어로 작성하되, 기술 용어는 영어 병기 가능.
-    - 문단 간 명확한 구분과 제목 표기를 포함하세요.
+    ------------------------------------------------
     """)
+
 
     chain = prompt | llm
     response = chain.invoke({
@@ -138,9 +157,14 @@ def report_agent(state: SystemState) -> SystemState:
     })
 
     report_text = response.content.strip()
+
+    os.makedirs("reports", exist_ok=True)
+    pdf_path = f"report/{trend.replace(' ', '_')}_report.pdf"
+
     state["final_report"] = {
         "trend": trend,
-        "report_text": report_text
+        "report_text": report_text,
+        "path" : pdf_path
     }
 
 

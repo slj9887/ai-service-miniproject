@@ -5,6 +5,8 @@ TrendPredictAgent
 
 
 import sys, os, json
+import re
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from langchain_openai import ChatOpenAI
@@ -19,11 +21,14 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 def trend_predict_agent(state: SystemState) -> SystemState:
     """TrendAnalysisAgent 결과를 바탕으로 미래 전망 생성"""
 
+    if state is None:
+        state = {}
+
     trend = state.get("current_trend")
     trend_analysis = state.get("trend_analysis")
 
     if not trend or not trend_analysis:
-        print("분석할 트렌드 정보가 부족합히니다. (trend_analysis 없음).")
+        print("분석할 트렌드 정보가 부족합니다. (trend_analysis 없음).")
         return state
     print(f"\n TrendPredictAgent: '{trend}' 트렌드의 미래 발전 방향 예측 중...")
 
@@ -42,6 +47,7 @@ def trend_predict_agent(state: SystemState) -> SystemState:
     prompt = ChatPromptTemplate.from_template("""
     당신은 2030년을 내다보는 기술 전략 분석가입니다.
     아래 정보를 바탕으로 {trend} 기술의 발전 방향, 시장 확장, 산업 적용 가능성을 예측하세요.
+    예측은 근거를 바탕으로 하고 2500자 정도로 작성하세요.
 
     [분석 컨텍스트]
     {context}
@@ -64,37 +70,78 @@ def trend_predict_agent(state: SystemState) -> SystemState:
         "summary": ""
       }}
     }}
+                                              
+    응답은 반드시 JSON 형식 **그 자체만** 출력하세요.
+    코드블록(```)이나 문장, 설명은 절대 포함하지 마세요.
     """)
 
     chain = prompt | llm
     response = chain.invoke({"trend": trend, "context": context})
     raw = response.content.strip()
 
-    try:
-        result = json.loads(raw)
-    except Exception:
-        import re
-        cleaned = re.sub(r"^```[a-zA-Z]*\n?|```$", "", raw).strip()
+    def safe_parse_json(raw_text):
+        """Markdown, 문장 등이 포함된 응답에서도 JSON만 추출"""
         try:
-            result = json.loads(cleaned)
+            return json.loads(raw_text)
         except Exception:
-            print("⚠️ JSON 파싱 실패. LLM 응답 원문:\n", raw)
-            result = {
-                "trend": trend,
-                "prediction": {
-                    "tech_path": "",
-                    "market_outlook": "",
-                    "industry_applications": "",
-                    "barriers": "",
-                    "summary": "LLM 파싱 실패"
-                }
-            }
+            # ```json ... ``` 제거
+            cleaned = re.sub(r"```(?:json)?|```", "", raw_text, flags=re.DOTALL).strip()
+            # JSON 괄호 내부만 추출
+            cleaned = re.sub(r"^[^{]*({.*})[^}]*$", r"\1", cleaned, flags=re.DOTALL)
+            try:
+                return json.loads(cleaned)
+            except Exception:
+                print("⚠️ JSON 파싱 실패. LLM 원문:", raw_text[:300], "...")
+                return None
 
-    state["trend_prediction"] = result.get("prediction", {})
+
+    result = safe_parse_json(raw)
+
+    # ✅ JSON 파싱 실패 시 기본 구조 생성
+    if not result or not isinstance(result, dict):
+        print("⚠️ JSON 파싱 실패. LLM 응답 원문:\n", raw)
+        result = {
+            "tech_path": "",
+            "market_outlook": "",
+            "industry_applications": "",
+            "barriers": "",
+            "summary": "파싱 실패"
+        }
+
+    # ✅ "prediction" 키가 있으면 내부로, 없으면 전체를 사용
+    if isinstance(result, dict):
+        if "prediction" in result and isinstance(result["prediction"], dict):
+            prediction_data = result["prediction"]
+        else:
+            prediction_data = result
+    else:
+        prediction_data = {}
+
+    # ✅ 비어 있을 경우 기본값 제공
+    if not prediction_data or not isinstance(prediction_data, dict):
+        prediction_data = {
+            "tech_path": "",
+            "market_outlook": "",
+            "industry_applications": "",
+            "barriers": "",
+            "summary": "LLM 응답이 비어 있음"
+        }
+
+    # ✅ state 안전하게 복사 후 저장
+    state = dict(state)
+    state["trend_prediction"] = prediction_data
+
     print("\n TrendPredictAgent 예측 완료!\n")
     print(json.dumps(state["trend_prediction"], indent=2, ensure_ascii=False))
+    print(f"🧩 [DEBUG] TrendPredictAgent 종료 시 state keys: {list(state.keys())}")
+    print(f"🧩 [DEBUG] trend_prediction 내용 타입: {type(state['trend_prediction'])}, 값: {state['trend_prediction']}")
+    print(f"[DEBUG] TrendPredictAgent 최종 반환 직전 state keys: {list(state.keys())}")
+    print(f"[DEBUG] TrendPredictAgent 최종 반환 직전 trend_prediction: {state.get('trend_prediction')}")
+
 
     return state
+
+
 
 
 if __name__ == "__main__":

@@ -19,12 +19,23 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 
 
 def risk_agent(state: SystemState) -> SystemState:
-    trend = state.get("current_trend")
-    prediction = state.get("trend_prediction")
+    """TrendAnalysisAgent 결과를 바탕으로 미래 전망 생성"""
 
-    if not trend or not prediction:
+    trend = state.get("current_trend")
+    prediction = state.get("trend_prediction", {})
+
+    if not trend:
+      print("⚠️ 트렌드 정보가 없습니다.")
+      return state
+
+    # trend_prediction 구조 확인
+    prediction = state.get("trend_prediction")
+    if not isinstance(prediction, dict) or not prediction.get("summary"):
         print("분석할 트렌드 또는 예측 정보가 없습니다.")
+        print(f"[DEBUG] 현재 trend_prediction 값: {prediction}")
         return state
+
+
     
     print(f"RiskAgent: '{trend}' 트렌드의 리스크 및 기회 요인 분석중...")
 
@@ -73,7 +84,7 @@ def risk_agent(state: SystemState) -> SystemState:
 
     try:
         result = json.loads(raw)
-        risk_data = result["risk_analysis"]
+        risk_data = result.get("risk_analysis",{})
     except Exception:
         import re
         cleaned = re.sub(r"^```[a-zA-Z]*\n?|```$", "", raw).strip()
@@ -92,8 +103,23 @@ def risk_agent(state: SystemState) -> SystemState:
     print("\n RiskAgent 분석 완료!\n")
     print(json.dumps(risk_data, indent=2, ensure_ascii=False))
 
-    state["risk_analysis"] = risk_data
-    return state
+    print(f"🧩 예측 결과 저장 완료: trend_prediction 키 존재 여부 = {'trend_prediction' in state}")
+    print(f"🧩 예측 데이터 미리보기: {state.get('trend_prediction')}")
+
+    # ✅ 기존 state 유지하면서 병합 (덮어쓰기 방지)
+    from copy import deepcopy
+    merged_state = deepcopy(state)
+    merged_state["risk_analysis"] = risk_data
+
+    print(f"[DEBUG] RiskAgent 종료 시 state keys: {list(merged_state.keys())}")
+    print(f"[DEBUG] trend_prediction 유지 여부: {'trend_prediction' in merged_state}")
+    print(f"[DEBUG] trend_prediction 내용 요약: {merged_state.get('trend_prediction', '없음')}")
+
+    return merged_state
+
+
+
+    
 
 
 

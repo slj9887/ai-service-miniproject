@@ -31,7 +31,7 @@ def extract_trend_candidates(docs):
     combined_text = "\n".join([clean_text(d["content"]) for d in docs])
     prompt = ChatPromptTemplate.from_template("""
     다음은 여러 AI 기술 트렌드 기사 요약문이다.
-    이 내용을 기반으로 향후 5년 급성장하거나 새롭게 등장할 가능성이 높은 AI 관련 트렌드 후보를 추출하라.
+    이 내용을 기반으로 향후 5년 급성장하거나 새롭게 등장할 가능성이 높은 AI 관련 기술 트렌드 후보를 추출하라.
     - 구체적인 기술명만 포함 (예: Neuromorphic AI, Synthetic Data, Federated Learning, Multimodal AI, Self-learning AI 등)
     - 이미 상용화된 기술 제외
     - 응용 기술도 포함
@@ -99,7 +99,7 @@ def rank_by_future_relevance(candidates):
     import json, re
     raw = response.content.strip()
 
-    # ✅ 코드블록(````json````) 제거
+
     if raw.startswith("```"):
         raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
         raw = raw.replace("```", "").strip()
@@ -132,6 +132,10 @@ def trend_select_agent(state: SystemState) -> SystemState:
     - ranked_trends 리스트를 state에서 관리
     - 호출될 때마다 하나씩 trend를 꺼내 state["current_trend"]로 전달
     """
+
+    if state is None:
+        state = {}
+
     # 최초 실행이면 새로 후보 생성
     if "remaining_trends" not in state:
         docs = state.get("search_results", [])
@@ -146,6 +150,7 @@ def trend_select_agent(state: SystemState) -> SystemState:
 
         print(f"  ▪ 최종 정렬된 트렌드 목록: {final_ranked}")
         state["remaining_trends"] = final_ranked
+        state["search_results"] = docs
 
     # 남은 트렌드에서 하나 꺼내기
     remaining = state.get("remaining_trends", [])
@@ -159,7 +164,7 @@ def trend_select_agent(state: SystemState) -> SystemState:
 
     # state 업데이트
     state["current_trend"] = current
-    state["remaining_trends"] = remaining
+    state["remaining_trends"] = remaining or []
     return state
 
 

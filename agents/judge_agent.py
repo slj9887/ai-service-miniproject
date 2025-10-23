@@ -27,11 +27,19 @@ def judge_agent(state: SystemState) -> SystemState:
         state["is_qualified"] = False
         return state
     
+    if not state.get("remaining_trends"):
+        print("🚫 남은 트렌드가 없습니다. 워크플로우 종료.")
+        return state
+
+    
     print(f"\n JudgeAgent: '{trend}' 트렌드 평가 중...")
 
     prompt = ChatPromptTemplate.from_template("""
     당신은 2030년을 바라보는 미래 기술 분석가입니다.
-    이미 상용화된 기술보다 향후 3~5년 내에 급성장하거나 새롭게 등장할 가능성이 높은 기술을 중심으로 다음 평가 지표를 통해 평가하세요.
+    당신의 역할은 ‘냉철한 평가자’로서 기술을 객관적으로 판단하는 것입니다.  
+    AI 기술에 대해 과도한 낙관 평가를 피하고,  
+    기술적/상업적 한계와 불확실성도 반드시 반영하세요.
+    이미 상용화된 기술을 제외하고 향후 3~5년 내에 급성장하거나 새롭게 등장할 가능성이 높은 기술을 중심으로 다음 평가 지표를 통해 평가하세요.
 
     트렌드명: {trend}
 
@@ -45,24 +53,30 @@ def judge_agent(state: SystemState) -> SystemState:
     4. 혁신성 및 차별성 (Innovativeness & Differentiation)
     - 기존 기술 대비 혁신 정도, 새로운 패러다임 제시 여부
                                               
+    [평가 지표 세부 기준]
+    - 0.0 ~ 0.3: 매우 낮음 
+    - 0.4 ~ 0.6: 중간 수준 
+    - 0.7 ~ 0.8: 유망 
+    - 0.9 ~ 1.0: 매우 유망 
+
+                                              
     JSON 형식으로 출력:
     {{
-      "trend": "{trend}",
-      "scores": {{
-        "maturity": 0~1,
-        "growth": 0~1,
-        "applicability": 0~1,
-        "impact": 0~1,
-        "innovation": 0~1
-      }},
-      "total_score": 평균값,
-      "is_qualified": true/false,
-      "reason": "요약된 근거"
+    "trend": "{trend}",
+    "scores": {{
+        "maturity": 0.0~1.0,
+        "growth": 0.0~1.0,
+        "applicability": 0.0~1.0,
+        "innovation": 0.0~1.0
+    }},
+    "total_score": 평균값,
+    "is_qualified": true/false,
+    "reason": "요약된 근거 (기술의 한계와 리스크 포함)"
     }}
 
     판단 기준:
-    - total_score ≥ 0.8 → true (적합)
-    - total_score < 0.8 → false (부적합)
+    - total_score ≥ 0.65 → true (적합)
+    - total_score < 0.65 → false (부적합)
     """)
 
 
@@ -82,7 +96,13 @@ def judge_agent(state: SystemState) -> SystemState:
             print("⚠️ JSON 파싱 실패. LLM 원문:\n", raw_text)
             result = {
                 "trend": trend,
-                "scores": {},
+                "scores": {
+                    "maturity": 0,
+                    "growth": 0,
+                    "applicability": 0,
+                    "impact": 0,
+                    "innovation": 0
+                },
                 "total_score": 0,
                 "is_qualified": False,
                 "reason": "LLM 응답 파싱 실패"
@@ -92,18 +112,19 @@ def judge_agent(state: SystemState) -> SystemState:
     # 평가 결과 출력
         # 평가 결과 출력
     s = result.get("scores", {})
+
     print(f"  ▪ 기술 성숙도 (Maturity): {s.get('maturity')}")
-    print(f"  ▪ 시장 성장성 (Growth): {s.get('growth')}")
+    print(f"  ▪ 미래 성장성 (Growth): {s.get('growth')}")
     print(f"  ▪ 산업 적용성 (Applicability): {s.get('applicability')}")
-    print(f"  ▪ 사회적 영향력 (Impact): {s.get('impact')}")
     print(f"  ▪ 혁신성 및 차별성 (Innovation): {s.get('innovation')}")
     print(f"  ▪ 총점: {result.get('total_score')} ({'적합' if result.get('is_qualified') else '부적합'})")
     print(f"  ▪ 사유: {result.get('reason')}")
 
-
-    state["evaluation_result"] = result
-    state["is_qualified"] = result.get("is_qualified", False)
+    state["state"] = s
     state["total_score"] = result.get("total_score", 0)
+    state["is_qualified"] = result.get("is_qualified", False)
+    state["judge_result"] = "기준 통과" if result.get("is_qualified") else "기준 미달"
+    state["reason"] = result.get("reason","")
 
     return state
 

@@ -13,32 +13,67 @@ load_dotenv()
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 
-def search_agent(state: SystemState, query: str) -> SystemState:
+def search_agent(state: SystemState) -> SystemState:
     """Tavily 검색 실행"""
-    print(f"검색 중 : {query}")
-    response = tavily.search(query, max_results=20)
+    if state is None:
+        state = {}
 
-    results = response["results"]
+    queries = [
+    '"AI technologies that are not yet commercialized but expected to gain significant attention within the next 3–5 years"',
+    '"paradigm-shifting AI technologies emerging in the next 3–5 years"',
+    '"next frontier areas of AI research"',
+    '"disruptive AI innovations around 2030 that will reshape industries"',
+    '"future AI architectures that will lead the next paradigm shift"',
+    ]    
 
     reliable_sources = [
-        "nature.com", "arxiv.org", "research.ibm.com",
-        "deepmind.google", "mit.edu", "stanford.edu",
-        "openai.com", "microsoft.com/en-us/research",
-        "nvidia.com", "hbr.org"
+    "nature.com", "arxiv.org", "research.ibm.com",
+    "deepmind.google", "mit.edu", "stanford.edu",
+    "openai.com", "microsoft.com/en-us/research",
+    "nvidia.com", "hbr.org"
     ]
-    
-    formatted_results = []
-    for r in results:
-        formatted_results.append({
-            "title": r.get("title", "제목 없음"),
-            "url": r.get("url",""),
-            "content": r.get("content", "")[:300]
-        })
-    
-    print(f"{len(formatted_results)}개 결과 수집 완료")
+    site_filter = " OR ".join([f"site:{d}" for d in reliable_sources])
 
+    results = []
+    for q in queries:
+        filtered_query = f"{q} AND ({site_filter})"
+        print(f"🔍 Tavily 검색 중: {filtered_query}")
+        try:
+            res = tavily.search(filtered_query, max_results=5)
+            results.extend(res.get("results", []))
+        except Exception as e:
+            print(f"⚠️ 검색 실패: {e}")
+
+
+    try:
+        response = tavily.search(filtered_query, max_results=20)
+        results = response.get("results", [])
+    except Exception as e:
+        print(f"⚠️ Tavily 검색 실패: {e}")
+        state["search_results"] = []
+        return state
+
+    if not results:
+        print("⚠️ 검색 결과가 없습니다.")
+        state["search_results"] = []
+        return state
+    
+
+    
+    formatted_results = [
+        {
+            "title": r.get("title", "제목 없음"),
+            "url": r.get("url", "N/A"),
+            "content": r.get("content", "")[:500]
+        }
+        for r in results
+    ]
+
+    print(f" {len(formatted_results)}개 문서 수집 완료 (신뢰 도메인 한정)")
     state["search_results"] = formatted_results
     return state
+
+
 
 if __name__ == "__main__":
     from agents.state_schema import SystemState

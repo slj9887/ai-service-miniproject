@@ -28,21 +28,42 @@ def trend_analysis_agent(state: SystemState) -> SystemState:
     4. 분석 결과를 state.trend_analysis에 저장
     """
 
+    if state is None:
+        state = {}
+
     trend = state.get("current_trend")
     if not trend:
         print("분석할 트랜드(current_trend)가 없습니다.")
         return state
     print(f"\n TrendAnalysisAgent: '{trend}' 트렌드 분석 시작...")
 
-    query = "Federated Learning technology 2026 OR research trends OR industrial applications OR challenges OR market forecast"
+    # (③) Tavily 검색 부분 교체
+    reliable_domains = [
+        "nature.com", "arxiv.org", "mit.edu", "stanford.edu",
+        "mckinsey.com", "weforum.org", "unctad.org", "nvidia.com",
+        "microsoft.com/en-us/research", "deepmind.google"
+    ]
+    site_filter = " OR ".join([f"site:{d}" for d in reliable_domains])
+    query = f"({trend} technology trends 2026 OR industrial applications OR challenges OR market forecast) AND ({site_filter})"
+
+    print(f"🔍 검색 쿼리: {query}")
     response = tavily.search(query, max_results=20)
+    results = response.get("results", [])
 
     docs = [
-        Document(page_content=clean_text(r.get("content", "")[:1000]),
-                metadata={"url": r.get("url")} )
-        for r in response["results"]
-    ]
+    Document(
+        page_content=clean_text(r.get("content", "")[:1000]),
+        metadata={"url": r.get("url")}
+    )
+    for r in results if r.get("content")
+]
+
     print(f"📄 관련 문서 {len(docs)}개 수집 완료")
+    if not docs:
+        print("⚠️ 분석 가능한 문서가 없습니다.")
+        state["trend_analysis"] = {"error": "문서 수집 실패"}
+        return state
+    
 
     #임베딩 + Chroma 벡터스토어 구축
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -66,8 +87,9 @@ def trend_analysis_agent(state: SystemState) -> SystemState:
 
         prompt = ChatPromptTemplate.from_template("""
         당신은 2030년을 내다보는 미래 기술 분석가입니다.
-        다음 문서를 참고하여 '{trend}' 트렌드의 '{topic}'에 대해 분석 요약을 작성하세요.
-        5문장 이내로 간결하고 구체적으로 작성하세요.
+        다음 문서를 참고하여 '{trend}' 트렌드의 '{topic}'에 대해 분석을 작성하세요.
+        "각 항목은 무조건 3문단 이상으로 작성하고, 기술적/산업적 근거를 포함하세요."
+
 
         ==== 문서 ====
         {context}
@@ -80,7 +102,7 @@ def trend_analysis_agent(state: SystemState) -> SystemState:
         print(f"{topic} 분석 완료")
 
     state["trend_analysis"] = analysis  
-    state["vectorstore"] = vectorstore  
+    state["vectorstore_info"] = {"trend": trend, "doc_count": len(docs)} 
 
     print(f"\n📊 '{trend}' 분석 완료! ({len(docs)}개 문서 기반)")
     return state
