@@ -9,32 +9,32 @@
 - Tools : Langchain 기반 에이전트 설계, GPT-4o 기반 요약 및 분석
 
 ## 폴더 구조
-AI_SERVICE_MINIPROJECT/
-├── agents/ # 주요 에이전트 모듈
-│ ├── init.py
-│ ├── search_agent.py # Tavily API를 통해 트렌드 후보 수집
-│ ├── trend_select_agent.py # 주요 트렌드 선택 로직
-│ ├── judge_agent.py # 기술 성숙도 및 성장성 평가
-│ ├── trend_analysis_agent.py # 산업별 적용 및 기술적 특성 분석
-│ ├── trend_predict_agent.py # 향후 3~5년간 기술 발전 방향 예측
-│ ├── risk_agent.py # 리스크 및 기회 요인 분석
-│ ├── report_agent.py # PDF 보고서 자동 생성
-│ └── state_schema.py # 전체 워크플로우 state 정의
-│
-├── utils/ # 보조 유틸리티
-│ ├── data_cleaner.py # 텍스트 전처리 및 정제
-│ └── init.py
-│
-├── reports/ # 자동 생성된 분석 보고서
-│ └── 
-│
-├── fonts/ # PDF 렌더링용 폰트
-│
-├── .env # API 키 및 환경 변수
-├── main.py # 실행 엔트리 포인트
-├── gitignore
-├── requirements.txt # 의존성 목록
-└── README.md # 프로젝트 설명서
+AI_SERVICE_MINIPROJECT/  
+├── agents/ # 주요 에이전트 모듈  
+│ ├── init.py  
+│ ├── search_agent.py # Tavily API를 통해 트렌드 후보   
+│ ├── trend_select_agent.py # 주요 트렌드 선택 로직  
+│ ├── judge_agent.py # 기술 성숙도 및 성장성 평가  
+│ ├── trend_analysis_agent.py # 산업별 적용 및 기술적 특성 분석  
+│ ├── trend_predict_agent.py # 향후 3~5년간 기술 발전 방향 예측  
+│ ├── risk_agent.py # 리스크 및 기회 요인 분석  
+│ ├── report_agent.py # PDF 보고서 자동 생성  
+│ └── state_schema.py # 전체 워크플로우 state 정의  
+│  
+├── utils/ # 보조 유틸리티  
+│ ├── data_cleaner.py # 텍스트 전처리 및 정제  
+│ └── init.py  
+│  
+├── reports/ # 자동 생성된 분석 보고서  
+│ └──   
+│  
+├── fonts/ # PDF 렌더링용 폰트  
+│  
+├── .env # API 키 및 환경 변수  
+├── main.py # 실행 엔트리 포인트  
+├── gitignore  
+├── requirements.txt # 의존성 목록  
+└── README.md # 프로젝트 설명서  
 
 ## 보고서 정의  
 보고서 목차
