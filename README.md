@@ -8,7 +8,7 @@
 - Methods : 웹 기반 트렌드 키워드 수집, 선정 지표 기반 평가, 시사점 도출 및 보고서 생성
 - Tools : Langchain 기반 에이전트 설계, GPT-4o 기반 요약 및 분석
 
-## 폴더 구조
+## Directory Structure
 AI_SERVICE_MINIPROJECT/  
 ├── agents/ # 주요 에이전트 모듈  
 │ ├── init.py  
@@ -26,7 +26,6 @@ AI_SERVICE_MINIPROJECT/
 │ └── init.py  
 │  
 ├── reports/ # 자동 생성된 분석 보고서  
-│ └──   
 │  
 ├── fonts/ # PDF 렌더링용 폰트  
 │  
@@ -35,6 +34,17 @@ AI_SERVICE_MINIPROJECT/
 ├── gitignore  
 ├── requirements.txt # 의존성 목록  
 └── README.md # 프로젝트 설명서  
+
+## Tech Stack
+| 구분 | 사용 기술 |  
+|------|------------|  
+| **LLM** | OpenAI `gpt-4o-mini` |  
+| **프레임워크** | [LangGraph](https://python.langchain.com/docs/langgraph), LangChain |  
+| **검색** | Tavily API |  
+| **PDF 생성** | FPDF / ReportLab |  
+| **환경 변수 관리** | python-dotenv |  
+| **데이터 처리** | pandas, re, json |  
+| **OS/로깅** | logging, pathlib |  
 
 ## 보고서 정의  
 보고서 목차
