@@ -174,6 +174,12 @@ def report_agent(state: SystemState) -> SystemState:
     pdf = PDF()
     pdf.add_title_page()
     pdf.add_section("",report_text)
+    
+    pdf.add_page()
+    pdf.set_font("NotoSans", "", 9)
+    text = "AI로 생성된 보고서입니다. — AI 트렌드 분석"
+    pdf.multi_cell(0, 10, text)
+
     pdf.output(pdf_path)
 
     print(f"\n ReportAgent: '{trend}' 보고서 생성 완료!")

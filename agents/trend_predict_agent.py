@@ -13,6 +13,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from agents.state_schema import SystemState
+import copy
 
 load_dotenv()
 llm = ChatOpenAI(model="gpt-4o-mini")
@@ -108,27 +109,26 @@ def trend_predict_agent(state: SystemState) -> SystemState:
             "summary": "파싱 실패"
         }
 
-    # ✅ "prediction" 키가 있으면 내부로, 없으면 전체를 사용
     if isinstance(result, dict):
-        if "prediction" in result and isinstance(result["prediction"], dict):
-            prediction_data = result["prediction"]
-        else:
-            prediction_data = result
+        # "prediction" 키가 있으면 내부, 없으면 전체 사용
+        prediction_data = result.get("prediction", result)
     else:
         prediction_data = {}
 
-    # ✅ 비어 있을 경우 기본값 제공
-    if not prediction_data or not isinstance(prediction_data, dict):
+    # ❌ 비어 있는지 단순히 검사하지 말고 summary 존재 여부로 검사
+    if not isinstance(prediction_data, dict) or not prediction_data.get("summary"):
+        print("⚠️ 예측 데이터 비어 있음. 기본 구조로 대체합니다.")
         prediction_data = {
-            "tech_path": "",
-            "market_outlook": "",
-            "industry_applications": "",
-            "barriers": "",
-            "summary": "LLM 응답이 비어 있음"
+            "tech_path": result.get("tech_path", ""),
+            "market_outlook": result.get("market_outlook", ""),
+            "industry_applications": result.get("industry_applications", ""),
+            "barriers": result.get("barriers", ""),
+            "summary": result.get("summary", "LLM 응답이 비어 있음")
         }
 
+
     # ✅ state 안전하게 복사 후 저장
-    state = dict(state)
+    state = copy.deepcopy(state)
     state["trend_prediction"] = prediction_data
 
     print("\n TrendPredictAgent 예측 완료!\n")

@@ -22,7 +22,7 @@ def risk_agent(state: SystemState) -> SystemState:
     """TrendAnalysisAgent 결과를 바탕으로 미래 전망 생성"""
 
     trend = state.get("current_trend")
-    prediction = state.get("trend_prediction", {})
+    prediction = state.get("trend_prediction")
 
     if not trend:
       print("⚠️ 트렌드 정보가 없습니다.")
